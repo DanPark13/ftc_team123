@@ -36,6 +36,7 @@ LIABILITY,
 THE USE
 * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
+
 package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -65,6 +66,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.robotcore.external.navigation.Position;
 import org.firstinspires.ftc.robotcore.external.navigation.Velocity;
 import java.util.Locale;
+
 /**
 * {@link SensorBNO055IMU} gives a short demo on how to use the BNO055 Inertial Motion
 Unit (IMU) from AdaFruit.
@@ -76,162 +78,168 @@ OpMode list
 *
 * @see &lt;a href="http://www.adafruit.com/products/2472"&gt;Adafruit IMU&lt;/a&gt;
 */
+
 @TeleOp(name = "MiddleNoCraterIMU", group = "Sensor")
 public class MiddleNoCraterIMU extends LinearOpMode
 {
-DcMotor armLift;
+  DcMotor armLift;
 
-DcMotor frontLeftDrive, frontRightDrive, backLeftDrive, backRightDrive;
-Servo markerDrop;
-boolean left;
-boolean right;
-boolean middle;
-// The IMU sensor object
-BNO055IMU imu;
-// State used for updating telemetry
-Orientation angles;
-Acceleration gravity;
+  DcMotor frontLeftDrive, frontRightDrive, backLeftDrive, backRightDrive;
+  Servo markerDrop;
+  boolean left;
+  boolean right;
+  boolean middle;
+  // The IMU sensor object
+  BNO055IMU imu;
+  // State used for updating telemetry
+  Orientation angles;
+  Acceleration gravity;
 
-//Vuforia below here
-private static final String TFOD_MODEL_ASSET = "RoverRuckus.tflite";
-private static final String LABEL_GOLD_MINERAL = "Gold Mineral";
-private static final String LABEL_SILVER_MINERAL = "Silver Mineral";
-private static final String VUFORIA_KEY =
-"AdyWFXL/////AAABmabVwW2af0mcoL7Qkzy/QyRW/zL4XEWo6n5WTnfKvZz0u1WmcbupVi9llI
-cYkk6bwAlxDmgCwk5v3RIFtvs5lLJVB8S+mAIlcc1psXZ29NY4Ve0E8VrELpDuufEV9sj4GJ9sSr
-LcyMmIG5B5UjrphdJ5XRdG4eNPcUe8fyEABeEiKgTgHS+ybe2dQTMaKBl1sDzacK5g9xDBYm
-/kFJx6P2PY6Pe1ncsVIVAzT54qqTOMXq2la69ztU/iLs0NQZR/IHJ3zv8HLlCquNULYGww2yWe
-UoR7QpzePPqqO7i23LqJa7BL3cqf06zAU7GE3eJNt4PKNxgQlI5wiV93w1klo8zL4GQrZd7EeZ
-Rks/D4bv9q";
+  //Vuforia below here
+  private static final String TFOD_MODEL_ASSET = "RoverRuckus.tflite";
+  private static final String LABEL_GOLD_MINERAL = "Gold Mineral";
+  private static final String LABEL_SILVER_MINERAL = "Silver Mineral";
+  private static final String VUFORIA_KEY = 
+  "AdyWFXL/////AAABmabVwW2af0mcoL7Qkzy/QyRW/zL4XEWo6n5WTnfKvZz0u1WmcbupVi9llI
+  cYkk6bwAlxDmgCwk5v3RIFtvs5lLJVB8S+mAIlcc1psXZ29NY4Ve0E8VrELpDuufEV9sj4GJ9sSr
+  LcyMmIG5B5UjrphdJ5XRdG4eNPcUe8fyEABeEiKgTgHS+ybe2dQTMaKBl1sDzacK5g9xDBYm
+  /kFJx6P2PY6Pe1ncsVIVAzT54qqTOMXq2la69ztU/iLs0NQZR/IHJ3zv8HLlCquNULYGww2yWe
+  UoR7QpzePPqqO7i23LqJa7BL3cqf06zAU7GE3eJNt4PKNxgQlI5wiV93w1klo8zL4GQrZd7EeZ
+  Rks/D4bv9q";
+
 /**
 * {@link #vuforia} is the variable we will use to store our instance of the Vuforia
 * localization engine.
 */
+
 private VuforiaLocalizer vuforia;
 /**
 * {@link #tfod} is the variable we will use to store our instance of the Tensor Flow Object
 * Detection engine.
 */
+
 private TFObjectDetector tfod;
+
 @Override public void runOpMode()
 {
-initializeIMU();
+  initializeIMU();
 
-armInitEnc("armLift");
-wheelInit("frontLeft", "frontRight", "backLeft", "backRight");
-boolean look = false;
+  armInitEnc("armLift");
+  wheelInit("frontLeft", "frontRight", "backLeft", "backRight");
+  boolean look = false;
 
-markerDropInit("markerDrop");
-// The TFObjectDetector uses the camera frames from the VuforiaLocalizer, so we create
-that
-// first.
-initVuforia();
-if (ClassFactory.getInstance().canCreateTFObjectDetector()) {
-initTfod();
-} else {
-telemetry.addData("Sorry!", "This device is not compatible with TFOD");
-}
-/** Wait for the game to begin */
-telemetry.addData("&gt;", "Press Play to start tracking");
-telemetry.update();
-// Wait until we&#39;re told to go
-waitForStart();
-tfod.activate();
-// Start the logging of measured acceleration
-imu.startAccelerationIntegration(new Position(), new Velocity(), 1000);
-if (opModeIsActive()) {
-/** Activate Tensor Flow Object Detection. */
-if (tfod != null) {
-tfod.activate();
-}
+  markerDropInit("markerDrop");
+  // The TFObjectDetector uses the camera frames from the VuforiaLocalizer, so we create that first.
+  
+  initVuforia();
+  
+  if (ClassFactory.getInstance().canCreateTFObjectDetector()) {
+    initTfod();
+  } 
+    else { 
+     telemetry.addData("Sorry!", "This device is not compatible with TFOD") 
+  }
+    
+    /** Wait for the game to begin */
+    telemetry.addData("&gt;", "Press Play to start tracking");
+    telemetry.update();
+    // Wait until we&#39;re told to go
+    waitForStart();
+    tfod.activate();
+    // Start the logging of measured acceleration
+    imu.startAccelerationIntegration(new Position(), new Velocity(), 1000);
+    
+    if (opModeIsActive()) {
+    /** Activate Tensor Flow Object Detection. */
+      if (tfod != null) {
+      tfod.activate();
+    }
 // Loop and update the dashboard
 while (opModeIsActive())
 {
-final int scanTimeStart = 45000;
+  final int scanTimeStart = 45000;
 
-int scanTime = scanTimeStart;
-double scanIncrement = 0.00001;
+  int scanTime = scanTimeStart;
+  double scanIncrement = 0.00001;
 
-armMove(-.25, 3300);
-wheelDrive("RIGHT", 0.2, 500);
-sleep(250);
-wheelDrive("BACKWARD", 0.2, 700);
-wheelDrive("LEFT", 0.2, 800);
+  armMove(-.25, 3300);
+  wheelDrive("RIGHT", 0.2, 500);
+  sleep(250);
+  wheelDrive("BACKWARD", 0.2, 700);
+  wheelDrive("LEFT", 0.2, 800);
 
-while (scanTime &gt; 0 &amp;&amp; right == false) // scanning for the cube on right
-{
-scanTime -= scanIncrement;
-telemetry.addData("Scanning For Right", " Bro" );
-if (tfod != null)
-{
-// getUpdatedRecognitions() will return null if no new information is available since
-// the last time that call was made.
-List&lt;Recognition&gt; updatedRecognitions = tfod.getUpdatedRecognitions();
-if (updatedRecognitions != null)
-{
-telemetry.addData("# Object Detected", updatedRecognitions.size());
-if(updatedRecognitions.size() &gt; 0)
-{
-}
-for (Recognition recognition : updatedRecognitions)
-{
-if (recognition.getLabel().equals(LABEL_GOLD_MINERAL))
-{
-telemetry.addData("YO", "IT WORKS NOW WE CAN FIND THE PROBLEM" )
-;
-telemetry.update();
-right = true;
-}
-}
-}
-
-}
-telemetry.update();
-}
-scanTime = scanTimeStart;
-if (right == true)
-{
-telemetry.addData("Right", "True");
-telemetry.update();
-wheelDrive("BACKWARD", 0.2, 400);
-wheelTurn45("LEFT", 0.25);
-wheelDrive("BACKWARD", 0.2, 400);
-wheelTurn45("RIGHT", 0.25);
-wheelDrive("FORWARD", 0.2, 1200);
-}
-else
-{
-wheelDrive("RIGHT", 0.2, 1250);
-while (scanTime &gt; 0 &amp;&amp; middle == false) // scanning for the cube in middle
-{
-scanTime -= scanIncrement;
-telemetry.addData("Scanning For Middle", " Bro" );
-if (tfod != null)
-{
-// getUpdatedRecognitions() will return null if no new information is available since
-// the last time that call was made.
-List&lt;Recognition&gt; updatedRecognitions = tfod.getUpdatedRecognitions();
-if (updatedRecognitions != null)
-{
-telemetry.addData("# Object Detected", updatedRecognitions.size());
-if(updatedRecognitions.size() &gt; 0)
-{
-
-}
-for (Recognition recognition : updatedRecognitions)
-{
-if (recognition.getLabel().equals(LABEL_GOLD_MINERAL))
-{
-telemetry.addData("YO", "IT WORKS NOW WE CAN FIND THE PROBLEM" )
-;
-telemetry.update();
-middle = true;
-}
-}
-}
-}
-telemetry.update();
-}
+  while (scanTime &gt; 0 &amp;&amp; right == false) // scanning for the cube on right
+  {
+    scanTime -= scanIncrement;
+    telemetry.addData("Scanning For Right", " Bro" );
+    if (tfod != null)
+    {
+      // getUpdatedRecognitions() will return null if no new information is available since
+      // the last time that call was made.
+      List&lt;Recognition&gt; updatedRecognitions = tfod.getUpdatedRecognitions();
+       if (updatedRecognitions != null)
+       {
+          telemetry.addData("# Object Detected", updatedRecognitions.size());
+          if(updatedRecognitions.size() &gt; 0)
+          {
+            //Empty
+          }
+          for (Recognition recognition : updatedRecognitions)
+          {
+            if (recognition.getLabel().equals(LABEL_GOLD_MINERAL))
+            {
+              telemetry.addData("YO", "IT WORKS NOW WE CAN FIND THE PROBLEM" );
+              telemetry.update();
+              right = true;
+            }
+          }
+        }
+      }
+    telemetry.update();
+  }
+  scanTime = scanTimeStart;
+  if (right == true)
+  {
+    telemetry.addData("Right", "True");
+    telemetry.update();
+    wheelDrive("BACKWARD", 0.2, 400);
+    wheelTurn45("LEFT", 0.25);
+    wheelDrive("BACKWARD", 0.2, 400);
+    wheelTurn45("RIGHT", 0.25);
+    wheelDrive("FORWARD", 0.2, 1200);
+  }
+  else
+  {
+    wheelDrive("RIGHT", 0.2, 1250);
+    while (scanTime &gt; 0 &amp;&amp; middle == false) // scanning for the cube in middle
+    {
+      scanTime -= scanIncrement;
+      telemetry.addData("Scanning For Middle", " Bro" );
+      if (tfod != null)
+      {
+        // getUpdatedRecognitions() will return null if no new information is available since
+        // the last time that call was made.
+        List&lt;Recognition&gt; updatedRecognitions = tfod.getUpdatedRecognitions();
+        if (updatedRecognitions != null)
+        {
+          telemetry.addData("# Object Detected", updatedRecognitions.size());
+          if(updatedRecognitions.size() &gt; 0)
+          {
+             //Empty
+          }
+          for (Recognition recognition : updatedRecognitions)
+          {
+            if (recognition.getLabel().equals(LABEL_GOLD_MINERAL))
+            {
+                telemetry.addData("YO", "IT WORKS NOW WE CAN FIND THE PROBLEM" );
+                telemetry.update();
+                middle = true;
+            }
+          }
+        }
+      }
+    telemetry.update();
+  }
 scanTime = scanTimeStart;
 if (middle == true)
 {
