@@ -36,6 +36,8 @@ LIABILITY,
 THE USE
 * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
+
+
 package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -66,13 +68,14 @@ import org.firstinspires.ftc.robotcore.external.navigation.Position;
 import org.firstinspires.ftc.robotcore.external.navigation.Velocity;
 import java.util.Locale;
 
-
+@TeleOp(name="VanguardDriveOne", group ="Concept")
 public class VanguardDriveOne extends LinearOpMode {
 
-    // Declare OpMode members.
+    // Declare OpMode members
     private ElapsedTime runtime = new ElapsedTime();
-    private DcMotor frontLeftDrive, frontRightDrive, backLeftDrive, backRightDrive;
-
+    private DcMotor frontLeftDrive, frontRightDrive, backLeftDrive, backRightDrive, grabMotor, slideMotor;
+    Servo LeftFoundation, RightFoundation;
+    private int positionStay;
 
     @Override
     public void runOpMode() {
@@ -84,6 +87,24 @@ public class VanguardDriveOne extends LinearOpMode {
         // step (using the FTC Robot Controller app on the phone).
         double speed = 1.0;
         wheelInit("frontLeft", "frontRight", "backLeft", "backRight");
+        
+        LeftFoundationInit("LeftFoundationGrip");
+        RightFoundationInit("RightFoundationGrip");
+        
+        grabMotorInit("grabMotor");
+        slideMotorInit("slideMotor");
+        
+        //grabMotor will use encoders
+        grabMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        grabMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        grabMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        grabMotor.setPower(0.7);
+        
+        // slide motor will use encoders
+        slideMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        slideMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        slideMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        slideMotor.setPower(0.7);
 
         // Most robots need the motor on one side to be reversed to drive forward
         // Reverse the motor that runs backwards when connected directly to the battery
@@ -92,45 +113,53 @@ public class VanguardDriveOne extends LinearOpMode {
         waitForStart();
         runtime.reset();
 
-        // run until the end of the match (driver presses STOP)
+        // Run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
-
+            if( gamepad1.left_stick_button && gamepad1.right_stick_button)
+                speed = speed - 0.5;
             
-
             // Drivetrain controls
             if( gamepad1.dpad_right )
-            {
-                wheelDrive( "RIGHT" , speed );
-            }
-            else if( gamepad1.dpad_left )
-            {
                 wheelDrive( "LEFT" , speed );
-            }
-            else if( gamepad1.dpad_up )
-            {
-                wheelDrive( "FORWARD" , speed );
-            }
-            else if( gamepad1.dpad_down )
-            {
-                wheelDrive( "BACKWARD" , speed );
-            }
-            else if( gamepad1.right_bumper )
-            {
-                wheelTurn( "RIGHT" , speed);
-            }
+                
             else if( gamepad1.dpad_left )
-            {
+                wheelDrive( "RIGHT" , speed );
+                
+            else if( gamepad1.dpad_up )
+                wheelDrive( "BACKWARD" , speed );
+                
+            else if( gamepad1.dpad_down )
+                wheelDrive( "FORWARD" , speed );
+                
+            else if( gamepad1.right_bumper )
+                wheelTurn( "RIGHT" , speed);
+                
+            else if( gamepad1.left_bumper)
                 wheelTurn( "LEFT" , speed );
-            }
-            else
+                
+            else 
             {
                 wheelDrive( "FORWARD" , 0 );
+                frontLeftDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+                frontRightDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+                backLeftDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+                backRightDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
             }
-
             // Send calculated power to wheels
+            
+            //if y is clicked, it will move the foundation
+            
+            moveFoundation();
+            
+            //if a or b is clicked, grabber will move
+            grabMotor(0.25);
+            
+            //if right or left trigger, slide motor will move
+            slideMotor(0.3);
             
             // Show the elapsed game time and wheel power.
             telemetry.addData("Status", "Run Time: " + runtime.toString());
+            telemetry.addData("Speed: ", "" + speed);
             telemetry.update();
         }
     }
@@ -182,16 +211,17 @@ public class VanguardDriveOne extends LinearOpMode {
         backRightDrive.setPower(speed);
         backLeftDrive.setPower(speed);
     }
-    public void wheelTurn(String direction,double speed)
+    
+    public void wheelTurn(String direction, double speed)
     {
-        if(direction.equals("RIGHT") )
+        if(direction.equals("LEFT") )
         {
             frontRightDrive.setDirection(DcMotor.Direction.REVERSE);
             frontLeftDrive.setDirection(DcMotor.Direction.REVERSE);
             backRightDrive.setDirection(DcMotor.Direction.REVERSE);
             backLeftDrive.setDirection(DcMotor.Direction.REVERSE);
         }
-        else if(direction.equals("LEFT") )
+        else if(direction.equals("RIGHT") )
         {
             frontRightDrive.setDirection(DcMotor.Direction.FORWARD);
             frontLeftDrive.setDirection(DcMotor.Direction.FORWARD);
@@ -209,6 +239,74 @@ public class VanguardDriveOne extends LinearOpMode {
         backRightDrive.setPower(speed);
         backLeftDrive.setPower(speed);
     }
-}
-
     
+    public void LeftFoundationInit(String name){
+        LeftFoundation = hardwareMap.get(Servo.class, name);
+    }
+    
+    public void RightFoundationInit(String name){
+        RightFoundation = hardwareMap.get(Servo.class, name);
+    }
+    
+    
+    
+    public void moveFoundation(){
+        //if y is clicked, it will move the foundation
+        if(gamepad1.y)
+        {
+            LeftFoundation.setPosition(0.0);
+            RightFoundation.setPosition(0.75);
+        }
+        else
+        {
+            LeftFoundation.setPosition(0.75);
+            RightFoundation.setPosition(0.0);
+        }
+    }
+    
+    public void grabMotorInit(String name)
+    {
+        grabMotor = hardwareMap.get(DcMotor.class, name);
+    }
+    
+    public void slideMotorInit(String name)
+    {
+        slideMotor = hardwareMap.get(DcMotor.class, name);
+    }
+    
+    public void grabMotor(double powa)
+    {
+        //if a is clicked, grabMotor will move forwards OPEN
+        if(gamepad1.a){
+            grabMotor.setTargetPosition(grabMotor.getCurrentPosition() + 2240);
+        }
+        //if b is clicked, grabMotor will move backwards CLOSE
+        else if(gamepad1.b){
+            grabMotor.setTargetPosition(grabMotor.getCurrentPosition() - 2240);
+        }
+        else
+        {
+            grabMotor.setPower(0);
+        }
+    }
+    
+    public void slideMotor(double powa)
+    {
+        //if right trigger is pressed, slideMotor moves forwards
+        if(gamepad1.right_trigger >= 0.75)
+        {
+            slideMotor.setTargetPosition(slideMotor.getCurrentPosition()+200);
+            positionStay = slideMotor.getCurrentPosition();
+        }
+        //if left trigger is pressed, slideMotor moves backwards
+        else if(gamepad1.left_trigger >= 0.75)
+        {
+            slideMotor.setTargetPosition(slideMotor.getCurrentPosition()-200);
+            positionStay = slideMotor.getCurrentPosition();
+        }
+        else
+        {
+            slideMotor.setTargetPosition(positionStay);
+        }
+    }
+}
