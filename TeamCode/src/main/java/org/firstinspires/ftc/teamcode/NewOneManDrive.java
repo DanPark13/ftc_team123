@@ -62,7 +62,7 @@ import java.util.Locale;
 
 public class NewOneManDrive extends LinearOpMode 
 {
-    private DcMotor frontLeftDrive, frontRightDrive, backLeftDrive, backRightDrive, slideMotor;
+    private DcMotor frontLeftDrive, frontRightDrive, backLeftDrive, backRightDrive, slideMotor
     CRServo grabServo;
     Servo LeftFoundation, RightFoundation;
     
@@ -115,6 +115,7 @@ public class NewOneManDrive extends LinearOpMode
     
     public void DriveTrainOne()
     {
+        
         if (!gamepad1.dpad_up && !gamepad1.dpad_down && !gamepad1.dpad_right && !gamepad1.dpad_left)
         {
             frontLeftDrive.setPower(gamepad1.left_stick_y);
@@ -125,37 +126,37 @@ public class NewOneManDrive extends LinearOpMode
         
         if(gamepad1.dpad_up)
         {
-            frontLeftDrive.setPower(-1);
-            frontRightDrive.setPower(1);
-            backLeftDrive.setPower(-1);
-            backRightDrive.setPower(1);
+            frontLeftDrive.setPower(-0.6);
+            frontRightDrive.setPower(0.5);
+            backLeftDrive.setPower(-0.6);
+            backRightDrive.setPower(0.5);
         }
         
         // BACKWARD
         else if(gamepad1.dpad_down)
         {
-            frontLeftDrive.setPower(1);
-            frontRightDrive.setPower(-1);
-            backLeftDrive.setPower(1);
-            backRightDrive.setPower(-1);
+            frontLeftDrive.setPower(0.6);
+            frontRightDrive.setPower(-0.5);
+            backLeftDrive.setPower(0.6);
+            backRightDrive.setPower(-0.5);
         }
         
         // STRAFE RIGHT
         else if(gamepad1.dpad_right)
         {
-            frontLeftDrive.setPower(-1);
-            frontRightDrive.setPower(-1);
-            backLeftDrive.setPower(1);
-            backRightDrive.setPower(1);
+            frontLeftDrive.setPower(-0.6);
+            frontRightDrive.setPower(-0.5);
+            backLeftDrive.setPower(0.6);
+            backRightDrive.setPower(0.5);
         }
         
         // STRAFE LEFT
         else if(gamepad1.dpad_left)
         {
-            frontLeftDrive.setPower(1);
-            frontRightDrive.setPower(1);
-            backLeftDrive.setPower(-1);
-            backRightDrive.setPower(-1);
+            frontLeftDrive.setPower(0.6);
+            frontRightDrive.setPower(0.5);
+            backLeftDrive.setPower(-0.6);
+            backRightDrive.setPower(-0.5);
         }
         else if (gamepad1.left_stick_y == 0 && gamepad1.right_stick_y == 0)
         {
@@ -182,11 +183,11 @@ public class NewOneManDrive extends LinearOpMode
     {
         if(gamepad1.left_bumper)
         {
-            grabServo.setPower(-0.5);
+            grabServo.setPower(-1);
         }
         else if(gamepad1.right_bumper)
         {
-            grabServo.setPower(0.5);
+            grabServo.setPower(1);
         }
         else if(gamepad1.left_bumper == false && gamepad1.right_bumper == false)
         {
