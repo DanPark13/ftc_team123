@@ -97,7 +97,8 @@ public class IMU_LEARN extends LinearOpMode
 
     private DcMotor frontLeftDrive, frontRightDrive, backLeftDrive, backRightDrive, slideMotor, grabMotor, tapeMotor;
     private double speed = 1;
-    CRServo grabServo;
+    Servo autoGrabServo;
+    CRServo grabServo, capstoneServo;
     // The IMU sensor object
     BNO055IMU imu;
 
@@ -148,7 +149,9 @@ public class IMU_LEARN extends LinearOpMode
         grabServoInit("grabServo");
         slideMotorInit("slideMotor");
         grabMotorInit("grabMotor");
+        autoGrabServoInit("autoGrabServo");
         tapeMotorInit("tapeMotor");
+        capstoneServoInit("capstoneServo");
         
        frontLeftDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
        frontRightDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -195,9 +198,11 @@ public class IMU_LEARN extends LinearOpMode
             
             telemetry.addData("Grab Motor Position", grabMotor.getCurrentPosition());
             
-            //skystoneGrab();
+            skystoneGrab();
             
             tapePark();
+            
+            moveCapstone();
             
             /*
             SetDirection();
@@ -376,9 +381,19 @@ public class IMU_LEARN extends LinearOpMode
         grabMotor = hardwareMap.get(DcMotor.class, name);
     }
     
+    public void autoGrabServoInit(String name)
+    {
+        autoGrabServo = hardwareMap.get(Servo.class, name);
+    }
+    
     public void tapeMotorInit(String name)
     {
         tapeMotor = hardwareMap.get(DcMotor.class, name);
+    }
+    
+    public void capstoneServoInit(String name)
+    {
+        capstoneServo = hardwareMap.get(CRServo.class, name);
     }
     
     public void grabServo()
@@ -388,6 +403,14 @@ public class IMU_LEARN extends LinearOpMode
             grabServo.setPower(-1);
         }
         else if(gamepad1.right_bumper)
+        {
+            grabServo.setPower(1);
+        }
+        else if(gamepad2.dpad_left)
+        {
+            grabServo.setPower(-1);
+        }
+        else if(gamepad2.dpad_right)
         {
             grabServo.setPower(1);
         }
@@ -410,6 +433,15 @@ public class IMU_LEARN extends LinearOpMode
         {
             slideMotor.setPower(gamepad1.left_trigger);
         }
+        else if(gamepad2.right_trigger >= 0.5)
+        {
+            slideMotor.setPower(-gamepad2.right_trigger);
+        }
+        //if left trigger is pressed, slideMotor moves backwards
+        else if(gamepad2.left_trigger >= 0.5)
+        {
+            slideMotor.setPower(gamepad2.left_trigger);
+        }
         else
         {
             slideMotor.setPower(0.0);
@@ -419,48 +451,73 @@ public class IMU_LEARN extends LinearOpMode
     
     public void skystoneGrab()
     {
-        boolean isClosed = false;
-        
-        if(gamepad1.b)
+        if(gamepad2.a)
         {
-            if(!isClosed)
+            grabMotor.setTargetPosition(200);
+            grabMotor.setPower(0.75);
+            grabMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            while(grabMotor.isBusy())
             {
-                grabMotor.setTargetPosition(0);
-                grabMotor.setPower(1);
-                grabMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                isClosed = true;
+                    
             }
-            else if(isClosed)
+            grabMotor.setPower(0); 
+        }
+        else if(gamepad2.y)
+        {
+            grabMotor.setTargetPosition(800);
+            grabMotor.setPower(-0.75);
+            grabMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            while(grabMotor.isBusy())
             {
-                grabMotor.setTargetPosition(1000);
-                grabMotor.setPower(-1);
-                grabMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                isClosed = false;
+                    
             }
-            else
-            {
-                grabMotor.setPower(0);
-            }
+            grabMotor.setPower(0); 
+        }    
+        else if(gamepad2.b)
+        {
+            autoGrabServo.setPosition(0);
+        }
+        else if(gamepad2.x)
+        {
+            autoGrabServo.setPosition(1);
+        }
+        else
+        {
+            grabMotor.setPower(0); 
         }
     }
     
     void tapePark()
     {
-        boolean isReleased = false;
-        
-        if(gamepad1.y)
-        {
-            tapeMotor.setPower(1);
-        }
-        else if(gamepad1.b)
+        if(gamepad2.dpad_up)
         {
             tapeMotor.setPower(-1);
+        }
+        else if(gamepad2.dpad_down)
+        {
+            tapeMotor.setPower(0.5);
         }
         else
         {
             tapeMotor.setPower(0);
+            tapeMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         }
-        
+    }
+    
+    void moveCapstone()
+    {
+        if(gamepad2.left_bumper)
+        {
+            capstoneServo.setPower(-1);
+        }
+        else if(gamepad2.right_bumper)
+        {
+            capstoneServo.setPower(1);
+        }
+        else
+        {
+           capstoneServo.setPower(0);
+        }
     }
 
     void SetDirection()
